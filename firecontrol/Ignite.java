@@ -15,15 +15,22 @@
 
 package sim.app.firecontrol;
 
+import java.util.Collections;
 import java.util.ArrayList;
 import java.util.LinkedList;
-
 import sim.engine.SimState;
 import sim.field.continuous.Continuous3D;
 import sim.field.grid.ObjectGrid2D;
 import sim.util.Bag;
 import sim.util.Double3D;
 import sim.util.Int2D;
+
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.HashSet;
 
 public class Ignite extends SimState{
 	private static final long serialVersionUID = 1;
@@ -40,8 +47,8 @@ public class Ignite extends SimState{
 	public ObjectGrid2D forest;
 
 	/* simulation params */
-	public int numUAVs = 2; //number of mavs involved in the simulation
-	public Bag UAVs; // all the agents in the simulation. Bag size is numMavs    
+	public int numUAVs = 8; //number of mavs involved in the simulation
+	public Bag UAVs; // all the agents in the simulation. Bag size is numMavs 
 
 	public static int height = 60; //size of the forest
 	public static int width = 60; //size of the forest 
@@ -81,8 +88,8 @@ public class Ignite extends SimState{
 		super.start();
 		//reset variables for job>1
 		cellsOnFire = 0;
-		cellsBurned = 0;
-		WorldCell.selfIgniteMax = 0;
+		cellsBurned = 0; 
+		WorldCell.selfIgniteMax = 0; 
 		
 		air = new Continuous3D(1, width, height, depth);
 		forest = new ObjectGrid2D(width, height);
@@ -155,7 +162,7 @@ public class Ignite extends SimState{
 			Int2D nextLocation;
 			WorldCell cell;
 
-			//try to find a center for the lake
+			//try to find a center for the fire
 			int maxTries = width*height;
 			do{
 				fireCenter = new Int2D(random.nextInt(width), random.nextInt(height));
@@ -171,7 +178,7 @@ public class Ignite extends SimState{
 			//place the center of the fire
 			cell = new WorldCell(fireCenter.x, fireCenter.y, CellType.FIRE);
 			forest.field[fireCenter.x][fireCenter.y] = cell;
-			cellsOnFire++;
+			cellsOnFire++; 
 			//generate the task for global knowledge
 			Task t = new Task(new Int2D(fireCenter.x, fireCenter.y), 0);
 			t.addCell(cell);
@@ -212,6 +219,7 @@ public class Ignite extends SimState{
 			}
 		}
 
+
 		//schedule all the cells
 		for(int w=0; w<width; w++){
 			for(int h=0; h<height; h++){
@@ -219,13 +227,17 @@ public class Ignite extends SimState{
 			}
 		}
 		
-		//random placement of agents 
+
+		//random placement of agents
+		UAVs = new Bag(); 
 		ArrayList<Double3D> extracted = new ArrayList<Double3D>();
 		Double3D location;
 		for(int i = 0 ; i < numUAVs; i++){
 			do{
 				location = new Double3D(random.nextInt(width), random.nextInt(height), random.nextInt(depth));
 			} while(extracted.contains(location));
+			//location = new Double3D(0, 0, 0);
+
 			//store extracted location to avoid duplicates
 			extracted.add(location);
 			//generate a new UAV
@@ -234,6 +246,8 @@ public class Ignite extends SimState{
 			air.setObjectLocation(uav, location);
 			//schedule the agent
 			schedule.scheduleRepeating(uav, 1, 1);
+
+			UAVs.add(uav);
 		}
 
 		//schedule the fireContrller, used to check the end of the simulation

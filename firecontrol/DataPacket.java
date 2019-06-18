@@ -6,32 +6,41 @@
  */
 
 package sim.app.firecontrol;
+import java.util.LinkedList;
+import java.sql.Timestamp;
+import java.util.UUID;  
 
 public class DataPacket{
 
 	public class Header{
-		public Header(){
-			//TODO
-			System.err.println("TODO: You have to define the header. Maybe a timestamp and an ID?");
+		public UUID packetID;
+		public int senderID;
+		public Timestamp timestamp; 
+
+		public Header(UUID packetID, int senderID, Timestamp timestamp){
+			this.packetID = packetID;
+			this.senderID = senderID;
+			this.timestamp = timestamp;
 		}
 	};
 
 	public class Payload{
-		public Payload(){
-			//TODO
-			System.err.println("TODO: You have to define the payload. What are you going to share?");
+		public DataPacketType type;
+		public UUID resPacketID;
+		public Object object;
+
+		public Payload(DataPacketType type, UUID resPacketID, Object object){
+			this.type = type;
+			this.resPacketID = resPacketID;
+			this.object = object;
 		}
 	};
 
 	public Header header;
 	public Payload payload;
 
-	//TODO
-	//define the data packet according to your payload and your header.
-	//please, note that if you do not define a good header you could have problem 
-	//with duplicates messages
-	public DataPacket(){
-		this.header = new Header();
-		this.payload = new Payload();
+	public DataPacket(UUID packetID, int senderID, Timestamp timestamp, DataPacketType type, UUID resPacketID, Object object){
+		this.header = new Header(packetID, senderID, timestamp);
+		this.payload = new Payload(type, resPacketID, object);
 	}
 }
